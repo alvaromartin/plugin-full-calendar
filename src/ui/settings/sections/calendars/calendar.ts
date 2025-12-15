@@ -51,6 +51,7 @@ interface ExtraRenderProps {
   openContextMenuForEvent?: (event: EventApi, mouseEvent: MouseEvent) => Promise<void>;
   toggleTask?: (event: EventApi, isComplete: boolean) => Promise<boolean>;
   dateRightClick?: (date: Date, mouseEvent: MouseEvent) => void;
+  dateSingleClick?: (date: Date) => void;
   viewRightClick?: (mouseEvent: MouseEvent, calendar: Calendar) => void;
   forceNarrow?: boolean;
   resources?: { id: string; title: string; eventColor?: string }[];
@@ -160,6 +161,7 @@ export async function renderCalendar(
     openContextMenuForEvent,
     toggleTask,
     dateRightClick,
+    dateSingleClick,
     viewRightClick,
     customButtons,
     resources,
@@ -412,6 +414,17 @@ export async function renderCalendar(
     select:
       select &&
       (async info => {
+        // In month view with dateSingleClick enabled, check if this was a drag or click
+        if (dateSingleClick && info.view.type === 'dayGridMonth') {
+          if (!(containerEl as any).__fcIsDragging) {
+            // It was a click, not a drag - open daily note instead
+            info.view.calendar.unselect();
+            const [year, month, day] = info.startStr.split('-').map(Number);
+            const localDate = new Date(year, month - 1, day);
+            dateSingleClick(localDate);
+            return;
+          }
+        }
         await select(info.start, info.end, info.allDay, info.view.type);
         info.view.calendar.unselect();
       }),
@@ -497,6 +510,84 @@ export async function renderCalendar(
   });
 
   cal.render();
+
+  // Track mouse/touch to distinguish single click vs drag (for month view)
+  // Hide highlight by default, show only when dragging via CSS class
+  if (dateSingleClick) {
+    let startX = 0;
+    let startY = 0;
+    let isPressed = false;
+    const DRAG_THRESHOLD = 3;
+    (containerEl as any).__fcIsDragging = false;
+    let pressedCell: HTMLElement | null = null;
+
+    // Add CSS to hide FullCalendar highlight until dragging, and style for pressed feedback
+    const style = document.createElement('style');
+    style.textContent = `
+      .fc-month-drag-detect .fc-highlight { opacity: 0; }
+      .fc-month-drag-detect.fc-is-dragging .fc-highlight { opacity: 1; }
+      .fc-month-drag-detect .fc-daygrid-day.fc-day-pressed {
+        background-color: var(--background-modifier-hover);
+      }
+      .fc-month-drag-detect.fc-is-dragging .fc-daygrid-day.fc-day-pressed {
+        background-color: transparent;
+      }
+    `;
+    containerEl.appendChild(style);
+    containerEl.classList.add('fc-month-drag-detect');
+
+    const handlePointerDown = (e: MouseEvent | TouchEvent) => {
+      // Only track on day cells in month view
+      const target = e.target as HTMLElement;
+      const dayCell = target.closest('.fc-daygrid-day') as HTMLElement | null;
+      if (!dayCell || cal.view.type !== 'dayGridMonth') {
+        return;
+      }
+      const point = 'touches' in e ? e.touches[0] : e;
+      startX = point.clientX;
+      startY = point.clientY;
+      isPressed = true;
+      (containerEl as any).__fcIsDragging = false;
+      containerEl.classList.remove('fc-is-dragging');
+
+      // Add pressed feedback
+      pressedCell = dayCell;
+      dayCell.classList.add('fc-day-pressed');
+    };
+
+    const handlePointerMove = (e: MouseEvent | TouchEvent) => {
+      if (!isPressed) return;
+      if ((containerEl as any).__fcIsDragging) return; // Already detected drag
+      const point = 'touches' in e ? e.touches[0] : e;
+      const dx = Math.abs(point.clientX - startX);
+      const dy = Math.abs(point.clientY - startY);
+      if (dx >= DRAG_THRESHOLD || dy >= DRAG_THRESHOLD) {
+        (containerEl as any).__fcIsDragging = true;
+        containerEl.classList.add('fc-is-dragging');
+      }
+    };
+
+    const handlePointerUp = () => {
+      isPressed = false;
+      // Remove pressed feedback
+      if (pressedCell) {
+        pressedCell.classList.remove('fc-day-pressed');
+        pressedCell = null;
+      }
+      // Keep __fcIsDragging true briefly so FullCalendar's select callback can check it
+      setTimeout(() => {
+        (containerEl as any).__fcIsDragging = false;
+        containerEl.classList.remove('fc-is-dragging');
+      }, 100);
+    };
+
+    containerEl.addEventListener('mousedown', handlePointerDown, true);
+    containerEl.addEventListener('mousemove', handlePointerMove, true);
+    containerEl.addEventListener('mouseup', handlePointerUp, true);
+    containerEl.addEventListener('touchstart', handlePointerDown, true);
+    containerEl.addEventListener('touchmove', handlePointerMove, true);
+    containerEl.addEventListener('touchend', handlePointerUp, true);
+  }
 
   // Set up date navigation after calendar is created
   const dateNavigation = createDateNavigation(cal, containerEl);

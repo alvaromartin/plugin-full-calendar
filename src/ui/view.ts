@@ -17,8 +17,14 @@
  */
 
 import { DateTime } from 'luxon';
+import { Moment } from 'moment';
 
 import { ItemView, Menu, Notice, WorkspaceLeaf } from 'obsidian';
+import {
+  getDailyNote,
+  getAllDailyNotes,
+  createDailyNote
+} from 'obsidian-daily-notes-interface';
 
 import type { Calendar, EventInput } from '@fullcalendar/core';
 
@@ -877,6 +883,22 @@ export class CalendarView extends ItemView {
           this.dateNavigation = createDateNavigation(this.fullCalendarView, calendarEl);
         }
         this.dateNavigation?.showDateContextMenu(mouseEvent, date);
+      },
+      dateSingleClick: async (date: Date) => {
+        // Open the daily note for the clicked date
+        try {
+          const moment = (window as any).moment(date) as Moment;
+          let file = getDailyNote(moment, getAllDailyNotes());
+          if (!file) {
+            file = await createDailyNote(moment);
+          }
+          await this.app.workspace.openLinkText(file.path, '', false);
+        } catch (e) {
+          if (e instanceof Error) {
+            console.error(e);
+            new Notice(e.message);
+          }
+        }
       },
       viewRightClick: (mouseEvent: MouseEvent, calendar: any) => {
         // Set up date navigation after calendar is created if not already done
