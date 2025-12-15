@@ -70,6 +70,10 @@ interface ExtraRenderProps {
   // Toolbar button visibility
   showWorkspaceButton?: boolean;
   showAnalysisButton?: boolean;
+
+  // App instance for context menu operations
+  app?: any;
+  getDailyNoteForDate?: (date: Date) => any;
 }
 
 export async function renderCalendar(
@@ -171,7 +175,9 @@ export async function renderCalendar(
     resources,
     onViewChange,
     businessHours,
-    drop
+    drop,
+    app,
+    getDailyNoteForDate
   } = settings || {};
 
   // Wrap eventClick to ignore shadow events
@@ -601,11 +607,37 @@ export async function renderCalendar(
   // Set up date navigation after calendar is created
   const dateNavigation = createDateNavigation(cal, containerEl);
 
+  // Set up app and daily note getter for context menu file operations
+  if (app && getDailyNoteForDate) {
+    dateNavigation.setApp(app, getDailyNoteForDate);
+  }
+
   // Update the navigate button click handler
   const navigateButton = containerEl.querySelector('.fc-navigate-button') as HTMLButtonElement;
   if (navigateButton) {
     navigateButton.addEventListener('click', (ev: MouseEvent) => {
       dateNavigation.showNavigationMenu(ev);
+    });
+  }
+
+  // Add right-click handler for day cells (must come before viewRightClick)
+  // Only enable if app and getDailyNoteForDate are provided for file operations
+  if (app && getDailyNoteForDate) {
+    containerEl.addEventListener('contextmenu', (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      // Check if clicked on a day cell in month view
+      const dayCell = target.closest('.fc-daygrid-day');
+      if (dayCell) {
+        const dateStr = dayCell.getAttribute('data-date');
+        if (dateStr) {
+          event.preventDefault();
+          event.stopPropagation();
+          const [year, month, day] = dateStr.split('-').map(Number);
+          const clickedDate = new Date(year, month - 1, day);
+          dateNavigation.showDateContextMenu(event, clickedDate);
+          return;
+        }
+      }
     });
   }
 

@@ -15,7 +15,7 @@
  */
 
 import { Calendar } from '@fullcalendar/core';
-import { Menu } from 'obsidian';
+import { App, Menu, TFile } from 'obsidian';
 import { DatePicker, createHiddenDatePicker } from '../../ui/components/forms/DatePicker';
 import { t } from '../i18n/i18n';
 
@@ -88,10 +88,20 @@ export class DateNavigation {
   private calendar: Calendar;
   private datePicker: DatePicker | null = null;
   private container: HTMLElement;
+  private app: App | null = null;
+  private getDailyNoteForDate: ((date: Date) => TFile | null) | null = null;
 
   constructor(calendar: Calendar, container: HTMLElement) {
     this.calendar = calendar;
     this.container = container;
+  }
+
+  /**
+   * Set the Obsidian app instance and daily note getter for file operations
+   */
+  public setApp(app: App, getDailyNoteForDate: (date: Date) => TFile | null): void {
+    this.app = app;
+    this.getDailyNoteForDate = getDailyNoteForDate;
   }
 
   /**
@@ -118,29 +128,49 @@ export class DateNavigation {
    * Handles navigation for right-click context menu on specific dates
    */
   public showDateContextMenu(event: MouseEvent, clickedDate: Date): void {
-    const context = this.getCurrentContext();
+    // Check if there's a daily note for this date
+    const dailyNote = this.getDailyNoteForDate?.(clickedDate);
+
+    // Only show menu if daily note exists
+    if (!dailyNote || !this.app) {
+      return;
+    }
+
     const menu = new Menu();
 
-    // Add view options for the specific date
-    const viewOptions = [
-      {
-        view: context.isNarrow ? 'timeGrid3Days' : 'dayGridMonth',
-        label: t('ui.navigation.viewMonth')
-      },
-      {
-        view: context.isNarrow ? 'timeGrid3Days' : 'timeGridWeek',
-        label: t('ui.navigation.viewWeek')
-      },
-      { view: 'timeGridDay', label: t('ui.navigation.viewDay') }
-    ];
-
-    viewOptions.forEach(({ view, label }) => {
-      menu.addItem(item => {
-        item.setTitle(label).onClick(() => {
-          this.navigateToDate(clickedDate, view);
+    menu.addItem(item => {
+      item
+        .setTitle('Delete')
+        .setIcon('trash')
+        .onClick(() => {
+          // Use Obsidian's file deletion prompt
+          (this.app as any).fileManager.promptForFileDeletion(dailyNote);
         });
-      });
     });
+
+    menu.addItem(item => {
+      item
+        .setTitle('Reveal in system explorer')
+        .setIcon('folder')
+        .onClick(() => {
+          (this.app as any).showInFolder(dailyNote.path);
+        });
+    });
+
+    menu.addItem(item => {
+      item
+        .setTitle('Reveal in navigation')
+        .setIcon('folder-tree')
+        .onClick(() => {
+          const fileExplorer = (this.app as any).internalPlugins?.getPluginById('file-explorer');
+          if (fileExplorer?.instance) {
+            fileExplorer.instance.revealInFolder(dailyNote);
+          }
+        });
+    });
+
+    // Let other plugins add their menu items
+    this.app.workspace.trigger('file-menu', menu, dailyNote, 'calendar-context-menu', null);
 
     menu.showAtMouseEvent(event);
   }
@@ -149,6 +179,24 @@ export class DateNavigation {
    * Handles navigation for general view right-click context menu
    */
   public showViewContextMenu(event: MouseEvent, calendar: Calendar): void {
+    // First, check if we clicked on a day cell - if so, try to show the daily note menu
+    const target = event.target as HTMLElement;
+    const dayCell = target.closest('.fc-daygrid-day');
+    if (dayCell) {
+      const dateStr = dayCell.getAttribute('data-date');
+      if (dateStr) {
+        const [year, month, day] = dateStr.split('-').map(Number);
+        const clickedDate = new Date(year, month - 1, day);
+        // Check if there's a daily note for this date
+        const dailyNote = this.getDailyNoteForDate?.(clickedDate);
+        if (dailyNote && this.app) {
+          // Show the daily note context menu instead
+          this.showDateContextMenu(event, clickedDate);
+          return;
+        }
+      }
+    }
+
     const context = this.getCurrentContext();
 
     // For view-level right-clicks, use the current view's date or detect date from position

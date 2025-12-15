@@ -583,6 +583,12 @@ export class CalendarView extends ItemView {
       // Toolbar button visibility
       showWorkspaceButton: this.plugin.settings.showWorkspaceButton,
       showAnalysisButton: this.plugin.settings.showAnalysisButton,
+      // App and daily note getter for day cell context menu
+      app: this.app,
+      getDailyNoteForDate: (d: Date) => {
+        const moment = (window as any).moment(d) as Moment;
+        return getDailyNote(moment, getAllDailyNotes());
+      },
       customButtons: {
         workspace: {
           text: this.getWorkspaceSwitcherText(),
@@ -884,6 +890,11 @@ export class CalendarView extends ItemView {
         // Set up date navigation after calendar is created if not already done
         if (!this.dateNavigation && this.fullCalendarView) {
           this.dateNavigation = createDateNavigation(this.fullCalendarView, calendarEl);
+          // Set up app and daily note getter for file operations in context menu
+          this.dateNavigation.setApp(this.app, (d: Date) => {
+            const moment = (window as any).moment(d) as Moment;
+            return getDailyNote(moment, getAllDailyNotes());
+          });
         }
         this.dateNavigation?.showDateContextMenu(mouseEvent, date);
       },
@@ -907,6 +918,11 @@ export class CalendarView extends ItemView {
         // Set up date navigation after calendar is created if not already done
         if (!this.dateNavigation && this.fullCalendarView) {
           this.dateNavigation = createDateNavigation(this.fullCalendarView, calendarEl);
+          // Set up app and daily note getter for file operations in context menu
+          this.dateNavigation.setApp(this.app, (d: Date) => {
+            const moment = (window as any).moment(d) as Moment;
+            return getDailyNote(moment, getAllDailyNotes());
+          });
         }
         this.dateNavigation?.showViewContextMenu(mouseEvent, calendar);
       },
