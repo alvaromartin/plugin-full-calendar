@@ -18,6 +18,7 @@ const INITIAL_VIEW_OPTIONS = {
   MOBILE: {
     timeGrid3Days: 'settings.viewOptions.threeDays',
     timeGridDay: 'settings.viewOptions.day',
+    dayGridMonth: 'settings.viewOptions.month',
     listWeek: 'settings.viewOptions.list'
   }
 };

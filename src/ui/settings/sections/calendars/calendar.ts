@@ -278,6 +278,7 @@ export async function renderCalendar(
         ? {
             timeGrid3Days: '3 Days',
             timeGridDay: 'Day',
+            dayGridMonth: 'Month',
             listWeek: 'List'
           }
         : {
