@@ -257,4 +257,29 @@ export function renderAppearanceSettings(
         await plugin.saveSettings();
       });
     });
+
+  // Toolbar buttons visibility
+  new Setting(containerEl).setName('Toolbar Buttons').setHeading();
+
+  new Setting(containerEl)
+    .setName('Show Workspace Button')
+    .setDesc('Show the workspace switcher button in the calendar toolbar')
+    .addToggle(toggle => {
+      toggle.setValue(plugin.settings.showWorkspaceButton ?? true);
+      toggle.onChange(async val => {
+        plugin.settings.showWorkspaceButton = val;
+        await plugin.saveSettings();
+      });
+    });
+
+  new Setting(containerEl)
+    .setName('Show Analysis Button')
+    .setDesc('Show the Chrono Analyser button in the calendar toolbar')
+    .addToggle(toggle => {
+      toggle.setValue(plugin.settings.showAnalysisButton ?? true);
+      toggle.onChange(async val => {
+        plugin.settings.showAnalysisButton = val;
+        await plugin.saveSettings();
+      });
+    });
 }

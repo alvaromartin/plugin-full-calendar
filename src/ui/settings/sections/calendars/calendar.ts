@@ -66,6 +66,10 @@ interface ExtraRenderProps {
   weekends?: boolean;
   hiddenDays?: number[];
   dayMaxEvents?: number | boolean;
+
+  // Toolbar button visibility
+  showWorkspaceButton?: boolean;
+  showAnalysisButton?: boolean;
 }
 
 export async function renderCalendar(
@@ -210,13 +214,17 @@ export async function renderCalendar(
     .filter(Boolean)
     .join(',');
 
+  // Check toolbar button visibility settings (default to true if undefined)
+  const showWorkspace = settings?.showWorkspaceButton !== false;
+  const showAnalysis = settings?.showAnalysisButton !== false;
+
   // Add workspace and navigate buttons to the left side of toolbar when not narrow
   const leftToolbarGroup = !isNarrow
-    ? 'workspace prev,next today,navigate'
+    ? [showWorkspace ? 'workspace' : null, 'prev,next', 'today,navigate'].filter(Boolean).join(' ')
     : 'prev,next today,navigate';
 
   // The comma between 'analysis' and the view group creates the visual separation.
-  const rightToolbarGroup = [!isNarrow ? 'analysis' : null, viewButtonGroup]
+  const rightToolbarGroup = [!isNarrow && showAnalysis ? 'analysis' : null, viewButtonGroup]
     .filter(Boolean)
     .join(' ');
 

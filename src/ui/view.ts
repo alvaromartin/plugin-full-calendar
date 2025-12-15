@@ -580,6 +580,9 @@ export class CalendarView extends ItemView {
       weekends: calendarConfig.weekends,
       hiddenDays: calendarConfig.hiddenDays,
       dayMaxEvents: calendarConfig.dayMaxEvents,
+      // Toolbar button visibility
+      showWorkspaceButton: this.plugin.settings.showWorkspaceButton,
+      showAnalysisButton: this.plugin.settings.showAnalysisButton,
       customButtons: {
         workspace: {
           text: this.getWorkspaceSwitcherText(),

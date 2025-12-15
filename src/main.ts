@@ -367,7 +367,9 @@ export default class FullCalendarPlugin extends Plugin {
       JSON.stringify(oldSettings.businessHours) !== JSON.stringify(this.settings.businessHours) ||
       oldSettings.enableAdvancedCategorization !== this.settings.enableAdvancedCategorization ||
       JSON.stringify(oldSettings.categorySettings) !==
-        JSON.stringify(this.settings.categorySettings);
+        JSON.stringify(this.settings.categorySettings) ||
+      oldSettings.showWorkspaceButton !== this.settings.showWorkspaceButton ||
+      oldSettings.showAnalysisButton !== this.settings.showAnalysisButton;
 
     if (viewSettingsChanged) {
       this.app.workspace.trigger('full-calendar:view-config-changed');

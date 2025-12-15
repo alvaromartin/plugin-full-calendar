@@ -67,7 +67,11 @@ export function migrateAndSanitizeSettings(settings: unknown): {
     slotMaxTime: raw.slotMaxTime ?? '24:00',
     weekends: raw.weekends ?? true,
     hiddenDays: raw.hiddenDays ?? [],
-    dayMaxEvents: raw.dayMaxEvents ?? false
+    dayMaxEvents: raw.dayMaxEvents ?? false,
+
+    // Toolbar button visibility
+    showWorkspaceButton: (raw as Partial<FullCalendarSettings>).showWorkspaceButton ?? true,
+    showAnalysisButton: (raw as Partial<FullCalendarSettings>).showAnalysisButton ?? true
   } as FullCalendarSettings & { calendarSources: (CalendarInfo | GoogleSourceWithAuth)[] } & {
     googleAuth?: LegacyGoogleAuth;
   };
