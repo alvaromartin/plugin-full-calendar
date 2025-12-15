@@ -415,3 +415,14 @@
   font-size: 0.9rem;
   font-weight: normal;
 }
+
+/* Center toolbar: prev/title/next inline */
+.fc .fc-toolbar-chunk:has(.fc-toolbar-title) > div {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fc .fc-toolbar-chunk .fc-toolbar-title {
+  margin: 0;
+}

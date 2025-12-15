@@ -220,8 +220,8 @@ export async function renderCalendar(
 
   // Add workspace and navigate buttons to the left side of toolbar when not narrow
   const leftToolbarGroup = !isNarrow
-    ? [showWorkspace ? 'workspace' : null, 'prev,next', 'today,navigate'].filter(Boolean).join(' ')
-    : 'prev,next today,navigate';
+    ? [showWorkspace ? 'workspace' : null, 'today,navigate'].filter(Boolean).join(' ')
+    : 'today,navigate';
 
   // The comma between 'analysis' and the view group creates the visual separation.
   const rightToolbarGroup = [!isNarrow && showAnalysis ? 'analysis' : null, viewButtonGroup]
@@ -231,14 +231,15 @@ export async function renderCalendar(
   const headerToolbar = !isNarrow
     ? {
         left: leftToolbarGroup,
-        center: 'title',
+        center: 'prev,title,next',
         right: rightToolbarGroup
       }
     : false; // On narrow views (including mobile), the header is empty.
 
   const footerToolbar = isNarrow
     ? {
-        left: 'today,navigate,prev,next',
+        left: 'today,navigate',
+        center: 'prev,title,next',
         right: rightToolbarGroup // Analysis is already filtered out for narrow views.
       }
     : false;
