@@ -23,6 +23,36 @@ import {
 } from '../../features/category/categoryParser';
 import { t } from '../../features/i18n/i18n';
 
+/**
+ * Toggle component that mimics Obsidian's native toggle styling
+ */
+interface ToggleProps {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  disabled?: boolean;
+  label?: string;
+  title?: string;
+  className?: string;
+}
+
+const Toggle = ({ checked, onChange, disabled, label, title, className }: ToggleProps) => (
+  <label
+    className={`ofc-toggle-label ${className || ''} ${disabled ? 'is-disabled' : ''}`}
+    title={title}
+  >
+    <div
+      className={`checkbox-container ${checked ? 'is-enabled' : ''}`}
+      onClick={e => {
+        if (!disabled) {
+          e.preventDefault();
+          onChange(!checked);
+        }
+      }}
+    />
+    {label && <span className="ofc-toggle-text">{label}</span>}
+  </label>
+);
+
 interface DayChoiceProps {
   code: string;
   label: string;
@@ -441,56 +471,46 @@ export const EditEvent = ({
           </div>
         </div>
 
-        {/* Options section replaced */}
+        {/* Options section with Obsidian-style toggles */}
         <div className="setting-item">
           <div className="setting-item-info">
             <div className="setting-item-name">{t('modals.editEvent.fields.options.label')}</div>
           </div>
           <div className="setting-item-control options-group">
-            <label title={isChildOverride ? disabledTooltip : ''}>
-              <input
-                type="checkbox"
-                checked={allDay}
-                onChange={e => setAllDay(e.target.checked)}
-                disabled={isChildOverride}
-              />{' '}
-              {t('modals.editEvent.fields.options.allDay')}
-            </label>
-            <label>
-              <input type="checkbox" checked={isTask} onChange={e => setIsTask(e.target.checked)} />{' '}
-              {t('modals.editEvent.fields.options.isTask')}
-            </label>
+            <Toggle
+              checked={allDay}
+              onChange={setAllDay}
+              disabled={isChildOverride}
+              label={t('modals.editEvent.fields.options.allDay')}
+              title={isChildOverride ? disabledTooltip : ''}
+            />
+            <Toggle
+              checked={isTask}
+              onChange={setIsTask}
+              label={t('modals.editEvent.fields.options.isTask')}
+            />
             {isTask && (
-              <label
+              <Toggle
+                checked={isRecurring ? false : !!complete}
+                onChange={checked =>
+                  !isRecurring && setComplete(checked ? DateTime.now().toISO() : false)
+                }
+                disabled={isRecurring}
+                label={t('modals.editEvent.fields.options.completed')}
                 title={isRecurring ? t('modals.editEvent.tooltips.recurringTaskCompletion') : ''}
-              >
-                <input
-                  type="checkbox"
-                  checked={isRecurring ? false : !!complete}
-                  onChange={e =>
-                    !isRecurring && setComplete(e.target.checked ? DateTime.now().toISO() : false)
-                  }
-                  disabled={isRecurring}
-                />{' '}
-                {t('modals.editEvent.fields.options.completed')}
-              </label>
+              />
             )}
-            {/* ADD THIS WRAPPER AROUND THE REMINDER CHECKBOX LABEL */}
             {enableReminders && (
-              <label
-                className={allDay || !endTime ? 'is-disabled' : ''}
+              <Toggle
+                checked={endReminder}
+                onChange={setEndReminder}
+                disabled={allDay || !endTime}
+                label={t('modals.editEvent.fields.options.endReminder')}
                 title={
                   allDay || !endTime ? t('modals.editEvent.fields.options.endReminderTooltip') : ''
                 }
-              >
-                <input
-                  type="checkbox"
-                  checked={endReminder}
-                  onChange={e => setEndReminder(e.target.checked)}
-                  disabled={allDay || !endTime}
-                />{' '}
-                {t('modals.editEvent.fields.options.endReminder')}
-              </label>
+                className={allDay || !endTime ? 'is-disabled' : ''}
+              />
             )}
           </div>
         </div>
