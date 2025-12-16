@@ -1,6 +1,3 @@
-.is-phone .fc {
-	height: calc(100% - 4rem);
-}
 .fc {
 	height: 100%;
 	--fc-button-text-color: var(--text-normal);
@@ -36,6 +33,25 @@
 	--fc-highlight-color: var(--text-highlight-bg);
 	--fc-bg-event-color: var(--background-modifier-success);
 	--fc-non-business-color: var(--background-modifier-box-shadow);
+}
+
+/* Mobile: darker today background for better visibility */
+.is-phone .fc,
+body.is-phone .fc,
+.is-mobile .fc {
+	height: calc(100% - 4rem);
+}
+
+.is-phone .fc .fc-daygrid-day.fc-day-today,
+body.is-phone .fc .fc-daygrid-day.fc-day-today,
+.is-mobile .fc .fc-daygrid-day.fc-day-today {
+	background-color: #141414;
+}
+
+.is-phone .fc .fc-toolbar-title,
+body.is-phone .fc .fc-toolbar-title,
+.is-mobile .fc .fc-toolbar-title {
+	font-size: 0.75em;
 }
 
 .fc a {
@@ -98,11 +114,65 @@
     display: flex;
     align-items: center; /* Vertically align label and control */
     gap: 1em; /* Space between label and control */
+    padding: 0.5em 0; /* Consistent vertical padding */
+    border: none; /* Remove default border */
 }
 
 .full-calendar-edit-modal .setting-item-info {
     flex: 0 0 100px; /* Give labels a fixed width of 100px */
     font-weight: 500;
+    align-self: center; /* Keep vertically centered */
+}
+
+.full-calendar-edit-modal .setting-item-name {
+    padding: 0; /* Remove any default padding on the name */
+    margin: 0;
+}
+
+/* Mobile-specific overrides for the edit modal */
+.is-phone .full-calendar-edit-modal .setting-item,
+body.is-phone .full-calendar-edit-modal .setting-item,
+.is-mobile .full-calendar-edit-modal .setting-item {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0.4em 0;
+    gap: 0.25em;
+}
+
+.is-phone .full-calendar-edit-modal .setting-item .setting-item-info,
+body.is-phone .full-calendar-edit-modal .setting-item .setting-item-info,
+.is-mobile .full-calendar-edit-modal .setting-item .setting-item-info {
+    flex: none;
+    width: 100%;
+    min-height: unset;
+    height: auto;
+    padding: 0;
+    margin: 0;
+    align-self: flex-start;
+}
+
+.is-phone .full-calendar-edit-modal .setting-item .setting-item-name,
+body.is-phone .full-calendar-edit-modal .setting-item .setting-item-name,
+.is-mobile .full-calendar-edit-modal .setting-item .setting-item-name {
+    padding: 0;
+    margin: 0;
+    font-size: 0.85em;
+    text-align: left;
+}
+
+.is-phone .full-calendar-edit-modal .setting-item .setting-item-control,
+body.is-phone .full-calendar-edit-modal .setting-item .setting-item-control,
+.is-mobile .full-calendar-edit-modal .setting-item .setting-item-control {
+    flex: none;
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+}
+
+.is-phone .full-calendar-edit-modal .setting-item-description,
+body.is-phone .full-calendar-edit-modal .setting-item-description,
+.is-mobile .full-calendar-edit-modal .setting-item-description {
+    display: none;
 }
 
 .full-calendar-edit-modal .setting-item-control {
@@ -134,6 +204,93 @@
     align-items: center;
     gap: 4px;
     white-space: nowrap;
+}
+
+/* Obsidian-style toggle labels */
+.full-calendar-edit-modal .ofc-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.full-calendar-edit-modal .ofc-toggle-label.is-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.full-calendar-edit-modal .ofc-toggle-text {
+    user-select: none;
+}
+
+/* Mobile options/time group - allow wrapping and prevent overflow */
+.is-phone .full-calendar-edit-modal .options-group,
+body.is-phone .full-calendar-edit-modal .options-group {
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    overflow: hidden;
+}
+
+.is-phone .full-calendar-edit-modal .options-group label,
+body.is-phone .full-calendar-edit-modal .options-group label {
+    font-size: 0.85em;
+    white-space: nowrap;
+}
+
+.is-phone .full-calendar-edit-modal .time-group,
+body.is-phone .full-calendar-edit-modal .time-group {
+    gap: 6px;
+}
+
+.is-phone .full-calendar-edit-modal .time-group input[type="time"],
+body.is-phone .full-calendar-edit-modal .time-group input[type="time"] {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Prevent horizontal overflow on mobile modal */
+.is-phone .full-calendar-edit-modal,
+body.is-phone .full-calendar-edit-modal {
+    overflow-x: hidden;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.is-phone .full-calendar-edit-modal form,
+body.is-phone .full-calendar-edit-modal form {
+    overflow-x: hidden;
+    max-width: 100%;
+}
+
+/* Fix modal container on mobile */
+.is-phone .modal:has(.full-calendar-edit-modal),
+body.is-phone .modal:has(.full-calendar-edit-modal) {
+    overflow-x: hidden;
+}
+
+.is-phone .modal:has(.full-calendar-edit-modal) .modal-content,
+body.is-phone .modal:has(.full-calendar-edit-modal) .modal-content {
+    overflow-x: hidden;
+    padding: 1em;
+    box-sizing: border-box;
+}
+
+/* Ensure setting items don't overflow on mobile */
+.is-phone .full-calendar-edit-modal .setting-item,
+body.is-phone .full-calendar-edit-modal .setting-item {
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* Ensure controls shrink properly */
+.is-phone .full-calendar-edit-modal .setting-item-control select,
+.is-phone .full-calendar-edit-modal .setting-item-control input,
+body.is-phone .full-calendar-edit-modal .setting-item-control select,
+body.is-phone .full-calendar-edit-modal .setting-item-control input {
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 /* POINT 4: DISABLED STATE STYLING */
