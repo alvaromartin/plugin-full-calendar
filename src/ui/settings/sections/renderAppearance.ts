@@ -282,4 +282,15 @@ export function renderAppearanceSettings(
         await plugin.saveSettings();
       });
     });
+
+  new Setting(containerEl)
+    .setName('Show View Button')
+    .setDesc('Show the view switcher dropdown in the calendar toolbar')
+    .addToggle(toggle => {
+      toggle.setValue(plugin.settings.showViewButton ?? true);
+      toggle.onChange(async val => {
+        plugin.settings.showViewButton = val;
+        await plugin.saveSettings();
+      });
+    });
 }

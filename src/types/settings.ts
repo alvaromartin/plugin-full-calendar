@@ -85,6 +85,7 @@ export interface FullCalendarSettings {
   // Toolbar button visibility
   showWorkspaceButton?: boolean;
   showAnalysisButton?: boolean;
+  showViewButton?: boolean;
 }
 
 export const DEFAULT_SETTINGS: FullCalendarSettings = {

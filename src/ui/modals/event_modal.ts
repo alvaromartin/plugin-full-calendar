@@ -51,6 +51,26 @@ export function launchCreateModal(plugin: FullCalendarPlugin, partialEvent: Part
     return;
   }
 
+  // Determine default calendar index based on active workspace
+  let defaultCalendarIndex = 0;
+  const activeWorkspaceId = plugin.settings.activeWorkspace;
+  if (activeWorkspaceId) {
+    const activeWorkspace = plugin.settings.workspaces.find(w => w.id === activeWorkspaceId);
+    if (activeWorkspace?.visibleCalendars && activeWorkspace.visibleCalendars.length > 0) {
+      // Filter to only writable calendars that are visible in the workspace
+      const writableVisibleCalendars = calendars.filter(c =>
+        activeWorkspace.visibleCalendars!.includes(c.id)
+      );
+      // If workspace has exactly one writable calendar, auto-select it
+      if (writableVisibleCalendars.length === 1) {
+        const targetIndex = calendars.findIndex(c => c.id === writableVisibleCalendars[0].id);
+        if (targetIndex !== -1) {
+          defaultCalendarIndex = targetIndex;
+        }
+      }
+    }
+  }
+
   // MODIFICATION: Get available categories
   const availableCategories = plugin.cache.getAllCategories();
 
@@ -58,7 +78,7 @@ export function launchCreateModal(plugin: FullCalendarPlugin, partialEvent: Part
     React.createElement(EditEvent, {
       initialEvent: partialEvent,
       calendars,
-      defaultCalendarIndex: 0,
+      defaultCalendarIndex,
       availableCategories,
       enableCategory: plugin.settings.enableAdvancedCategorization,
       enableBackgroundEvents: plugin.settings.enableBackgroundEvents,

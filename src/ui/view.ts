@@ -583,6 +583,7 @@ export class CalendarView extends ItemView {
       // Toolbar button visibility
       showWorkspaceButton: this.plugin.settings.showWorkspaceButton,
       showAnalysisButton: this.plugin.settings.showAnalysisButton,
+      showViewButton: this.plugin.settings.showViewButton,
       // App and daily note getter for day cell context menu
       app: this.app,
       getDailyNoteForDate: (d: Date) => {

@@ -71,7 +71,8 @@ export function migrateAndSanitizeSettings(settings: unknown): {
 
     // Toolbar button visibility
     showWorkspaceButton: (raw as Partial<FullCalendarSettings>).showWorkspaceButton ?? true,
-    showAnalysisButton: (raw as Partial<FullCalendarSettings>).showAnalysisButton ?? true
+    showAnalysisButton: (raw as Partial<FullCalendarSettings>).showAnalysisButton ?? true,
+    showViewButton: (raw as Partial<FullCalendarSettings>).showViewButton ?? true
   } as FullCalendarSettings & { calendarSources: (CalendarInfo | GoogleSourceWithAuth)[] } & {
     googleAuth?: LegacyGoogleAuth;
   };

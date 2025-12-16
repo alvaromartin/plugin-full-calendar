@@ -70,6 +70,7 @@ interface ExtraRenderProps {
   // Toolbar button visibility
   showWorkspaceButton?: boolean;
   showAnalysisButton?: boolean;
+  showViewButton?: boolean;
 
   // App instance for context menu operations
   app?: any;
@@ -214,23 +215,26 @@ export async function renderCalendar(
   const enableAdvancedCategorization = settings?.enableAdvancedCategorization;
   // already computed showResourceViews above
 
-  // Group the standard and timeline views together with a space.
-  // This tells FullCalendar to render them as a single, connected button group.
-  const viewButtonGroup = ['views', showResourceViews ? 'timeline' : null]
-    .filter(Boolean)
-    .join(',');
-
   // Check toolbar button visibility settings (default to true if undefined)
   const showWorkspace = settings?.showWorkspaceButton !== false;
   const showAnalysis = settings?.showAnalysisButton !== false;
+  const showView = settings?.showViewButton !== false;
 
-  // Add workspace and navigate buttons to the left side of toolbar when not narrow
-  const leftToolbarGroup = !isNarrow
-    ? [showWorkspace ? 'workspace' : null, 'today,navigate'].filter(Boolean).join(' ')
-    : 'today,navigate';
+  // Group the standard and timeline views together with a space.
+  // This tells FullCalendar to render them as a single, connected button group.
+  const viewButtonGroup = showView
+    ? ['views', showResourceViews ? 'timeline' : null].filter(Boolean).join(',')
+    : null;
 
-  // The comma between 'analysis' and the view group creates the visual separation.
-  const rightToolbarGroup = [!isNarrow && showAnalysis ? 'analysis' : null, viewButtonGroup]
+  // Left toolbar: today and navigate buttons
+  const leftToolbarGroup = 'today,navigate';
+
+  // Right toolbar: workspace (if enabled) + analysis (if enabled, desktop only) + views (if enabled)
+  const rightToolbarGroup = [
+    showWorkspace ? 'workspace' : null,
+    !isNarrow && showAnalysis ? 'analysis' : null,
+    viewButtonGroup
+  ]
     .filter(Boolean)
     .join(' ');
 
@@ -244,9 +248,9 @@ export async function renderCalendar(
 
   const footerToolbar = isNarrow
     ? {
-        left: 'today,navigate',
+        left: leftToolbarGroup,
         center: 'prev,title,next',
-        right: rightToolbarGroup // Analysis is already filtered out for narrow views.
+        right: rightToolbarGroup
       }
     : false;
 
@@ -625,6 +629,10 @@ export async function renderCalendar(
   if (app && getDailyNoteForDate) {
     containerEl.addEventListener('contextmenu', (event: MouseEvent) => {
       const target = event.target as HTMLElement;
+      // Skip if clicking on an event - let the event's own contextmenu handler run
+      if (target.closest('.fc-event')) {
+        return;
+      }
       // Check if clicked on a day cell in month view
       const dayCell = target.closest('.fc-daygrid-day');
       if (dayCell) {

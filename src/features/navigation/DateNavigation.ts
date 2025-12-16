@@ -181,6 +181,12 @@ export class DateNavigation {
   public showViewContextMenu(event: MouseEvent, calendar: Calendar): void {
     // First, check if we clicked on a day cell - if so, try to show the daily note menu
     const target = event.target as HTMLElement;
+
+    // Skip if clicking on an event - let the event's own contextmenu handler run
+    if (target.closest('.fc-event')) {
+      return;
+    }
+
     const dayCell = target.closest('.fc-daygrid-day');
     if (dayCell) {
       const dateStr = dayCell.getAttribute('data-date');
