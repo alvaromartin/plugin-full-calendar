@@ -201,6 +201,12 @@ export const EditEvent = ({
   const [complete, setComplete] = useState(
     initialEvent?.type === 'single' && initialEvent.completed
   );
+  const getDayCodeFromDate = (dateStr: string): string => {
+    const dayIndex = DateTime.fromISO(dateStr).weekday; // 1=Mon, 7=Sun
+    const dayCodes = ['M', 'T', 'W', 'R', 'F', 'S', 'U']; // Mon-Sun
+    return dayCodes[dayIndex - 1];
+  };
+
   const [daysOfWeek, setDaysOfWeek] = useState<string[]>(
     initialEvent?.type === 'recurring' ? initialEvent.daysOfWeek || [] : []
   );
@@ -249,6 +255,13 @@ export const EditEvent = ({
       setRecurrenceType('none');
     }
   }, [isDailyNoteCalendar]);
+
+  // Auto-select the day of the week when switching to weekly recurrence
+  useEffect(() => {
+    if (recurrenceType === 'weekly' && daysOfWeek.length === 0 && date) {
+      setDaysOfWeek([getDayCodeFromDate(date)]);
+    }
+  }, [recurrenceType, date]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
